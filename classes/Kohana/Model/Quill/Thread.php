@@ -9,7 +9,16 @@
  */
 class Kohana_Model_Quill_Thread extends ORM {
 
+	// Table specification
 	protected $_table_name = 'quill_threads';
+
+	protected $_table_columns = array(
+		'id' => null,
+		'location' => null,
+		'title' => null,
+		'description' => null,
+		'status' => null,
+	);
 
 	// Relationships
 	protected $_has_many = array(

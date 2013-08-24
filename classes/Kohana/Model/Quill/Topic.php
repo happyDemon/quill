@@ -9,7 +9,22 @@
  */
 class Kohana_Model_Quill_Topic extends ORM {
 
+	// Table specification
 	protected $_table_name = 'quill_topics';
+
+	protected $_table_columns = array(
+		'id' => null,
+		'thread_id' => null,
+		'user_id' => null,
+		'title' => null,
+		'content' => null,
+		'status' => null,
+		'stickied' => null,
+		'created_at' => null,
+		'last_post_user_id' => null,
+		'updated_at' => null,
+		'reply_count' => null,
+	);
 
 	// Relationships
 	protected $_belongs_to = array(
@@ -24,6 +39,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 
 	protected $_load_with = array('user', 'last_user');
 
+	// Auto-update time columns
 	protected $_created_column = array('column' => 'created_at', 'format' => '');
 	protected $_updated_column = array('column' => 'updated_at', 'format' => '');
 

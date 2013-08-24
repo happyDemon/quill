@@ -1,5 +1,14 @@
 <?php defined('SYSPATH') OR die('No direct access allowed.');
-
+/**
+ * Quill
+ *
+ * A portable discussion helper.
+ *
+ * @package    Quill
+ * @author     Maxim Kerstens 'happyDemon'
+ * @copyright  (c) 2013 Maxim Kerstens
+ * @license    MIT
+ */
 class Kohana_Quill {
 
 	/**
@@ -186,6 +195,24 @@ class Kohana_Quill {
 			->save($extra_validation);
 	}
 
+	/**
+	 * Create a reply for the provided topic.
+	 *
+	 * Required $values keys:
+	 *  - user_id
+	 *  - content
+	 *
+	 * Updates reply count for the topic, if enabled.
+	 * Adds last_post_user_id if enabled.
+	 *
+	 * if none of the above is enabled it 'touches' the topic to update the column 'updated_at' for ordering.
+	 *
+	 * @param Model_Quill_Topic|int $topic_id
+	 * @param array $values
+	 * @param null|Kohana_Validation $extra_validation
+	 * @return Model_Quill_Reply
+	 * @throws Kohana_Exception
+	 */
 	public function create_reply($topic_id, $values, $extra_validation=null)
 	{
 		$topic = null;

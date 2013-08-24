@@ -9,7 +9,16 @@
  */
 class Kohana_Model_Quill_Reply extends ORM {
 
+	// Table specification
 	protected $_table_name = 'quill_replies';
+
+	protected $_table_columns = array(
+		'id' => null,
+		'user_id' => null,
+		'topic_id' => null,
+		'content' => null,
+		'created_at' => null,
+	);
 
 	// Relationships
 	protected $_belongs_to = array(
@@ -19,6 +28,7 @@ class Kohana_Model_Quill_Reply extends ORM {
 
 	protected $_load_with = array('user');
 
+	// Auto-update time column
 	protected $_created_column = array('column' => 'created_at', 'format' => '');
 
 	public function __construct($id = NULL)
