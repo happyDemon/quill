@@ -1,4 +1,4 @@
 quill
 =====
 
-Kohana 3.3 discussion helper
+A portable Kohana 3.3 discussion helper
