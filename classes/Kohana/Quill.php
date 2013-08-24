@@ -19,7 +19,7 @@ class Kohana_Quill {
 	 * @param string $status Which status should the threads have? open|closed (false to ignore)
 	 * @return array List of loaded Quill instances
 	 */
-	public static function threads($location, $options = array(), $status='open')
+	public static function threads($location, $status='open', $options = array())
 	{
 		$threads = ORM::factory('Quill_Thread')->where('location', '=', $location);
 
@@ -80,12 +80,6 @@ class Kohana_Quill {
 	 */
 	protected $_thread = null;
 
-	/**
-	 * @var array see the config file for default options
-	 */
-	protected $_options = array();
-
-
 	public function __construct(Model_Quill_Thread $thread, $options)
 	{
 		if(!$thread->loaded())
@@ -93,6 +87,14 @@ class Kohana_Quill {
 			//if auto_create_thread is enabled we'll at least need a location defined to do so.
 			if(Kohana::$config->load('quill.auto_create_thread') == true && !empty($thread->location))
 			{
+				//set default option if not defined
+				foreach($options as $opt => $value)
+				{
+					if(empty($thread->{$opt}))
+					{
+						$thread->set($opt, $value);
+					}
+				}
 				$thread->save();
 			}
 			else
@@ -102,7 +104,6 @@ class Kohana_Quill {
 		}
 
 		$this->_thread = $thread;
-		$this->_options = $options;
 	}
 
 	/**
@@ -148,7 +149,7 @@ class Kohana_Quill {
 			$topics->where('status', '=', $status);
 		}
 
-		if($this->_options['stickies'] == true)
+		if($this->_thread->stickies == true)
 		{
 			$topics->order_by('stickied', 'DESC');
 		}
@@ -255,10 +256,10 @@ class Kohana_Quill {
 		// save the reply
 		$reply = ORM::factory('Quill_Reply')
 			->values($values, array('topic_id', 'user_id', 'content'))
-			->save($extra_validation, ($this->_options['count_replies'] || $this->_options['record_last_post']));
+			->save($extra_validation, ($this->_thread->count_replies || $this->_thread->record_last_post));
 
 		// if we need to keep reply count, calculate before updating
-		if($this->_options['count_replies'] == true)
+		if($this->_thread->count_replies == true)
 		{
 			$count = DB::select(array(DB::expr('COUNT(*)'), 'replies'))
 				->from('quill_replies')
@@ -270,7 +271,7 @@ class Kohana_Quill {
 		}
 
 		// if we need to record the last post's user
-		if($this->_options['record_last_post'])
+		if($this->_thread->record_last_post)
 		{
 			$topic->last_post_user_id = $values['user_id'];
 		}

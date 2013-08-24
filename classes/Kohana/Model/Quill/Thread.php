@@ -18,6 +18,9 @@ class Kohana_Model_Quill_Thread extends ORM {
 		'title' => null,
 		'description' => null,
 		'status' => null,
+		'stickies' => null,
+		'count_replies' => null,
+		'record_last_post' => null
 	);
 
 	// Relationships
