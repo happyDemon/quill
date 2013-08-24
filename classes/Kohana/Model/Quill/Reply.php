@@ -18,6 +18,7 @@ class Kohana_Model_Quill_Reply extends ORM {
 		'topic_id' => null,
 		'content' => null,
 		'created_at' => null,
+		'status' => null
 	);
 
 	// Relationships
@@ -45,8 +46,28 @@ class Kohana_Model_Quill_Reply extends ORM {
 		return array(
 			'content' => array(
 				array('not_empty')
+			),
+			'status' => array(
+				array('in_array', array(':value', array('active', 'deleted'))),
 			)
 		);
 	}
 
+	/**
+	 * Automatically 'touch' the related topic if needed.
+	 *
+	 * @param Validation $validation
+	 * @param bool $touch_topic
+	 * @return ORM
+	 */
+	public function save(Validation $validation=null, $touch_topic=false)
+	{
+		if($touch_topic == true)
+		{
+			$this->topic->updated_at = date(Kohana::$config->load('quill.time_format'));
+			$this->topic->save();
+		}
+
+		return parent::save($validation);
+	}
 } // End Quill reply model

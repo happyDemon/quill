@@ -110,11 +110,11 @@ class Kohana_Quill {
 	 *
 	 * @param integer|string $id Which id are we looking for
 	 * @param string $search_for Will we be checking the id or title column
-	 * @param string|false $status Which status does the topic need to have open|closed (false for any status)
+	 * @param string|false $status Which status does the topic need to have active|archived|deleted (false for any status)
 	 * @return Model_Quill_Topic
 	 * @throws Kohana_Exception
 	 */
-	public function topic($id, $search_for='id', $status='open')
+	public function topic($id, $search_for='id', $status='active')
 	{
 		if(!in_array($search_for, array('id', 'title')))
 		{
@@ -137,10 +137,10 @@ class Kohana_Quill {
 	 * Find topics for this thread.
 	 *
 	 * @param bool $find Execute the query when returning or not (when not doing so you could paginate the results)
-	 * @param string $status Which status does the topic need to have open|closed (false for any status)
+	 * @param string $status Which status does the topic need to have active|archived|deleted (false for any status)
 	 * @return Model_Quill_Topic
 	 */
-	public function topics($find=true, $status='open') {
+	public function topics($find=true, $status='active') {
 		$topics = $this->_thread->topics;
 
 		if($status != false)
@@ -174,6 +174,12 @@ class Kohana_Quill {
 	 */
 	public function create_topic(Array $values, $extra_validation=null)
 	{
+		// are we able to create a new topic in this thread
+		if($this->_thread->status == 'closed')
+		{
+			throw new Kohana_Exception('You can not create a topic in a closed thread.');
+		}
+
 		$values['thread_id'] = $this->_thread->id;
 
 		// this is required for ordering topics, so set it to creation time
@@ -238,14 +244,18 @@ class Kohana_Quill {
 			throw new Kohana_Exception('There\'s no topic to reply to.');
 		}
 
+		// are we able to post a reply to the topic?
+		if($topic->status != 'active')
+		{
+			throw new Kohana_Exception('You can\'t post a reply on a :status topic', array(':status' => $topic->status));
+		}
+
 		$values['topic_id'] = $topic_id;
 
 		// save the reply
 		$reply = ORM::factory('Quill_Reply')
 			->values($values, array('topic_id', 'user_id', 'content'))
-			->save($extra_validation);
-
-		$topic_changed = false;
+			->save($extra_validation, ($this->_options['count_replies'] || $this->_options['record_last_post']));
 
 		// if we need to keep reply count, calculate before updating
 		if($this->_options['count_replies'] == true)
@@ -257,20 +267,12 @@ class Kohana_Quill {
 				->get('replies');
 
 			$topic->reply_count = $count;
-			$topic_changed = true;
 		}
 
 		// if we need to record the last post's user
 		if($this->_options['record_last_post'])
 		{
 			$topic->last_post_user_id = $values['user_id'];
-			$topic_changed = true;
-		}
-
-		// if there were no changes 'touch' the topic
-		if($topic_changed == false)
-		{
-			$topic->updated_at = date(Kohana::$config->load('quill.time_format'));
 		}
 
 		$topic->save();

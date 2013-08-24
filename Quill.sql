@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `quill_topics` (
   `user_id` int(10) unsigned NOT NULL,
   `title` varchar(45) NOT NULL,
   `content` text NOT NULL,
-  `status` enum('open','closed','deleted') NOT NULL DEFAULT 'open',
+  `status` enum('active','archived','deleted') NOT NULL DEFAULT 'active',
   `stickied` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` varchar(30) NOT NULL,
   `last_post_user_id` int(10) unsigned NOT NULL,
@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `quill_replies` (
   `user_id` int(10) unsigned NOT NULL,
   `created_at` varchar(30) NOT NULL,
   `content` text NOT NULL,
+  `status` ENUM('active','deleted') NOT NULL DEFAULT  'active',
   PRIMARY KEY (`id`),
   KEY `fk_topic_id` (`topic_id`),
   KEY `fk_user_id` (`user_id`)

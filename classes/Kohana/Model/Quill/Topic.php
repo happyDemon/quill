@@ -65,9 +65,30 @@ class Kohana_Model_Quill_Topic extends ORM {
 				array('max_length', array(':value', 45)),
 			),
 			'status' => array(
-				array('in_array', array(':value', array('open', 'closed', 'deleted'))),
+				array('in_array', array(':value', array('active', 'archived', 'deleted'))),
 			)
 		);
+	}
+
+	/**
+	 * Load all replies related to this topic.
+	 *
+	 * @param bool $find Execute the query when returning or not (when not doing so you could paginate the results)
+	 * @param string $status Which status do the replies need to have active|deleted (false for any status)
+	 * @return mixed
+	 */
+	public function replies($find=true, $status='active')
+	{
+		$replies = $this->replies;
+
+		if($status != false)
+		{
+			$replies->where('status', '=', $status);
+		}
+
+		$replies->order_by('created_at', 'DESC');
+
+		return ($find == true) ? $replies->find_all() : $replies;
 	}
 
 } // End Quill topic model
