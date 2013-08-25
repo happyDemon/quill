@@ -180,6 +180,11 @@ class Kohana_Quill {
 			throw new Kohana_Exception('You can not create a topic in a closed thread.');
 		}
 
+		if(!isset($values['user_id']))
+		{
+			$values['user_id'] = Kohana::$config->load('quill.default_user_id');
+		}
+
 		$values['thread_id'] = $this->_thread->id;
 
 		// this is required for ordering topics, so set it to creation time
@@ -263,6 +268,11 @@ class Kohana_Quill {
 		if($topic->status != 'active')
 		{
 			throw new Kohana_Exception('You can\'t post a reply on a :status topic', array(':status' => $topic->status));
+		}
+
+		if(!isset($values['user_id']))
+		{
+			$values['user_id'] = Kohana::$config->load('quill.default_user_id');
 		}
 
 		$values['topic_id'] = $topic_id;
