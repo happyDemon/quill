@@ -15,11 +15,10 @@ class Kohana_Quill {
 	 * Load all threads for a location.
 	 *
 	 * @param string $location Name of the location
-	 * @param array $options Options for the threads (see config for defaults)
 	 * @param string $status Which status should the threads have? open|closed (false to ignore)
 	 * @return array List of loaded Quill instances
 	 */
-	public static function threads($location, $status='open', $options = array())
+	public static function threads($location, $status='open')
 	{
 		$threads = ORM::factory('Quill_Thread')->where('location', '=', $location);
 
@@ -32,11 +31,11 @@ class Kohana_Quill {
 
 		$list = array();
 
-		if($threads->loaded() && count($threads) > 0)
+		if(count($threads) > 0)
 		{
 			foreach($threads as $thread)
 			{
-				$list[] = self::factory($thread, $options);
+				$list[] = self::factory($thread);
 			}
 		}
 		return $list;
@@ -197,9 +196,24 @@ class Kohana_Quill {
 		}
 
 		// save the topic
-		return ORM::factory('Quill_Topic')
+		$topic = ORM::factory('Quill_Topic')
 			->values($values, array('thread_id', 'user_id', 'title', 'content', 'status', 'stickied', 'updated_at', 'reply_count'))
 			->save($extra_validation);
+
+		// if we're keeping track of active topic count, update it
+		if($this->_thread->count_topics == true)
+		{
+			$this->_thread->topic_count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
+				->from('quill_topics')
+				->where('thread_id', '=', $this->_thread->id)
+				->where('status', '=', 'active')
+				->execute()
+				->get('topics');
+
+			$this->_thread->save();
+		}
+
+		return $topic;
 	}
 
 	/**
@@ -264,6 +278,7 @@ class Kohana_Quill {
 			$count = DB::select(array(DB::expr('COUNT(*)'), 'replies'))
 				->from('quill_replies')
 				->where('topic_id', '=', $topic_id)
+				->where('status', '=', 'active')
 				->execute()
 				->get('replies');
 
@@ -279,5 +294,10 @@ class Kohana_Quill {
 		$topic->save();
 
 		return $reply;
+	}
+
+	public function __get($col)
+	{
+		return $this->_thread->get($col);
 	}
 }

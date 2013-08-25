@@ -91,4 +91,24 @@ class Kohana_Model_Quill_Topic extends ORM {
 		return ($find == true) ? $replies->find_all() : $replies;
 	}
 
+	/**
+	 * When deleting a topic, check if topic topic_count should be recalculated.
+	 * @return ORM
+	 */
+	public function delete()
+	{
+		if($this->thread->count_topics == 1)
+		{
+			$this->thread->topic_count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
+				->from('quill_topics')
+				->where('thread_id', '=', $this->thread_id)
+				->where('status', '=', 'active')
+				->execute()
+				->get('topics') - 1;
+
+			$this->thread->save();
+		}
+
+		return parent::delete();
+	}
 } // End Quill topic model

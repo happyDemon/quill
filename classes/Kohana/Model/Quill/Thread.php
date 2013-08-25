@@ -18,6 +18,9 @@ class Kohana_Model_Quill_Thread extends ORM {
 		'title' => null,
 		'description' => null,
 		'status' => null,
+		'topic_count' => null,
+		'count_topics' => null,
+		'record_last_topic' => null,
 		'stickies' => null,
 		'count_replies' => null,
 		'record_last_post' => null
@@ -45,8 +48,31 @@ class Kohana_Model_Quill_Thread extends ORM {
 			),
 			'status' => array(
 				array('in_array', array(':value', array('open', 'closed'))),
-			)
+			),
+			'topics' => array(
+				array('digit', array(':value')),
+			),
 		);
+	}
+
+	/**
+	 * Add the optional last_topic column (only accessible if record_last_topic is true)
+	 *
+	 * @param string $column
+	 * @return mixed|ORM
+	 */
+	public function get($column)
+	{
+		if(parent::get('record_last_topic') == 1 && $column == 'last_topic')
+		{
+			return ORM::factory('Quill_Topic')
+				->where('thread_id', '=', $this->id)
+				->order_by('updated_at', 'DESC')
+				->limit(1)
+				->find();
+		}
+
+		return parent::get($column);
 	}
 
 } // End Quill thread model

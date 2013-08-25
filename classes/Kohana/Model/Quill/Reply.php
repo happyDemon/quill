@@ -70,4 +70,25 @@ class Kohana_Model_Quill_Reply extends ORM {
 
 		return parent::save($validation);
 	}
+
+	/**
+	 * When deleting a reply, check if topic reply_count should be recalculated.
+	 * @return ORM
+	 */
+	public function delete()
+	{
+		if($this->topic->thread->count_replies == 1)
+		{
+			$this->topic->reply_count = DB::select(array(DB::expr('COUNT(*)'), 'replies'))
+				->from('quill_replies')
+				->where('topic_id', '=', $this->topic_id)
+				->where('status', '=', 'active')
+				->execute()
+				->get('replies') - 1;
+
+			$this->topic->save();
+		}
+
+		return parent::delete();
+	}
 } // End Quill reply model
