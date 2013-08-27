@@ -282,7 +282,7 @@ class Kohana_Quill {
 		// save the reply
 		$reply = ORM::factory('Quill_Reply')
 			->values($values, array('topic_id', 'user_id', 'content'))
-			->save($extra_validation, ($this->_thread->count_replies || $this->_thread->record_last_post));
+			->save($extra_validation, ($this->_thread->location->count_replies || $this->_thread->location->record_last_post));
 
 		// if we need to keep reply count, calculate before updating
 		if($this->_thread->location->count_replies == true)
