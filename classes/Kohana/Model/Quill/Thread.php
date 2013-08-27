@@ -62,7 +62,7 @@ class Kohana_Model_Quill_Thread extends ORM {
 	 */
 	public function get($column)
 	{
-		if(parent::get('location')->record_last_topic == 1 && $column == 'last_topic')
+		if($column == 'last_topic' && parent::get('location')->record_last_topic == 1)
 		{
 			return ORM::factory('Quill_Topic')
 				->where('thread_id', '=', $this->id)

@@ -30,16 +30,7 @@ class Kohana_Model_Quill_Reply extends ORM {
 	protected $_load_with = array('user');
 
 	// Auto-update time column
-	protected $_created_column = array('column' => 'created_at', 'format' => '');
-
-	public function __construct($id = NULL)
-	{
-		//set the time formats
-		$format = Kohana::$config->load('quill.time_format');
-		$this->_created_column['format'] = $format;
-
-		parent::__construct($id);
-	}
+	protected $_created_column = array('column' => 'created_at', 'format' => true);
 
 	public function rules()
 	{
@@ -64,7 +55,7 @@ class Kohana_Model_Quill_Reply extends ORM {
 	{
 		if($touch_topic == true)
 		{
-			$this->topic->updated_at = date(Kohana::$config->load('quill.time_format'));
+			$this->topic->updated_at = time();
 			$this->topic->save();
 		}
 
@@ -90,5 +81,15 @@ class Kohana_Model_Quill_Reply extends ORM {
 		}
 
 		return parent::delete();
+	}
+
+	public function get($col)
+	{
+		if($col == $this->_created_column['column'])
+		{
+			return date(Kohana::$config->load('quill.time_format'), parent::get($col));
+		}
+
+		return parent::get($col);
 	}
 } // End Quill reply model

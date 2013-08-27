@@ -40,18 +40,8 @@ class Kohana_Model_Quill_Topic extends ORM {
 	protected $_load_with = array('user', 'last_user');
 
 	// Auto-update time columns
-	protected $_created_column = array('column' => 'created_at', 'format' => '');
-	protected $_updated_column = array('column' => 'updated_at', 'format' => '');
-
-	public function __construct($id = NULL)
-	{
-		//set the time formats
-		$format = Kohana::$config->load('quill.time_format');
-		$this->_created_column['format'] = $format;
-		$this->_updated_column['format'] = $format;
-
-		parent::__construct($id);
-	}
+	protected $_created_column = array('column' => 'created_at', 'format' => true);
+	protected $_updated_column = array('column' => 'updated_at', 'format' => true);
 
 	public function rules()
 	{
@@ -110,5 +100,15 @@ class Kohana_Model_Quill_Topic extends ORM {
 		}
 
 		return parent::delete();
+	}
+
+	public function get($col)
+	{
+		if(in_array($col, array($this->_created_column['column'], $this->_updated_column['column'])))
+		{
+			return date(Kohana::$config->load('quill.time_format'), parent::get($col));
+		}
+
+		return parent::get($col);
 	}
 } // End Quill topic model

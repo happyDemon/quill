@@ -20,7 +20,7 @@ class Kohana_Quill {
 	 */
 	public static function threads($location, $status='open', $options = array())
 	{
-		$threads = ORM::factory('Quill_Thread')->with('location')->where('location.name', '=', $location);
+		$threads = ORM::factory('Quill_Thread')->where('location.name', '=', $location);
 
 		if($status != false)
 		{
@@ -205,7 +205,7 @@ class Kohana_Quill {
 		// save the topic
 		$topic = ORM::factory('Quill_Topic')
 			->values($values, array('thread_id', 'user_id', 'title', 'content', 'status', 'stickied', 'updated_at', 'reply_count'))
-			->save();
+			->save($extra_validation);
 
 		// if we're keeping track of active topic count, update it
 		if($this->_thread->location->count_topics == true)
