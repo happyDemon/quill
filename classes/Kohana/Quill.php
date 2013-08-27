@@ -120,6 +120,10 @@ class Kohana_Quill {
 		{
 			throw new Kohana_Exception('You can only look for a topic based on id or title');
 		}
+		else
+		{
+			$search_for = 'quill_topic.'.$search_for;
+		}
 
 		$topic = $this->_thread->topics;
 
@@ -192,7 +196,7 @@ class Kohana_Quill {
 
 		// defaults
 		$values['reply_count'] = 0;
-		$values['status'] = 'open';
+		$values['status'] = 'active';
 
 		// optional
 		if(!isset($values['stickied']))
@@ -203,7 +207,7 @@ class Kohana_Quill {
 		// save the topic
 		$topic = ORM::factory('Quill_Topic')
 			->values($values, array('thread_id', 'user_id', 'title', 'content', 'status', 'stickied', 'updated_at', 'reply_count'))
-			->save($extra_validation);
+			->save();
 
 		// if we're keeping track of active topic count, update it
 		if($this->_thread->count_topics == true)

@@ -14,21 +14,20 @@ class Kohana_Model_Quill_Thread extends ORM {
 
 	protected $_table_columns = array(
 		'id' => null,
-		'location' => null,
+		'location_id' => null,
 		'title' => null,
 		'description' => null,
 		'status' => null,
-		'topic_count' => null,
-		'count_topics' => null,
-		'record_last_topic' => null,
-		'stickies' => null,
-		'count_replies' => null,
-		'record_last_post' => null
+		'topic_count' => null
 	);
 
 	// Relationships
 	protected $_has_many = array(
 		'topics' => array('model' => 'Quill_Topic', 'foreign_key' => 'thread_id'),
+	);
+
+	protected $_belongs_to = array(
+		'location' => array('model' => 'Quill_Location', 'foreign_key' => 'location_id'),
 	);
 
 	public function rules()
@@ -49,7 +48,7 @@ class Kohana_Model_Quill_Thread extends ORM {
 			'status' => array(
 				array('in_array', array(':value', array('open', 'closed'))),
 			),
-			'topics' => array(
+			'topic_count' => array(
 				array('digit', array(':value')),
 			),
 		);
