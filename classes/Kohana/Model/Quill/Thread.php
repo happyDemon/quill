@@ -30,13 +30,13 @@ class Kohana_Model_Quill_Thread extends ORM {
 		'location' => array('model' => 'Quill_Location', 'foreign_key' => 'location_id'),
 	);
 
+	protected $_load_with = array('location');
+
 	public function rules()
 	{
 		return array(
-			'location' => array(
-				array('not_empty'),
-				array('min_length', array(':value', 4)),
-				array('max_length', array(':value', 60)),
+			'location_id' => array(
+				array('not_empty')
 			),
 			'title' => array(
 				array('min_length', array(':value', 3)),
@@ -62,7 +62,7 @@ class Kohana_Model_Quill_Thread extends ORM {
 	 */
 	public function get($column)
 	{
-		if(parent::get('record_last_topic') == 1 && $column == 'last_topic')
+		if(parent::get('location')->record_last_topic == 1 && $column == 'last_topic')
 		{
 			return ORM::factory('Quill_Topic')
 				->where('thread_id', '=', $this->id)

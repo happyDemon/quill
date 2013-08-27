@@ -97,7 +97,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 	 */
 	public function delete()
 	{
-		if($this->thread->count_topics == 1)
+		if($this->thread->location->count_topics == 1)
 		{
 			$this->thread->topic_count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
 				->from('quill_topics')

@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `quill_threads` (
   `title` varchar(45) NOT NULL,
   `description` varchar(144) NOT NULL,
   `status` enum('open','closed') NOT NULL DEFAULT 'open',
-  `topic_count` int(10) unsigned NOT NULL DEFAULT '0'
+  `topic_count` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `fk_location_id` (`location_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS `quill_replies` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 ALTER TABLE `quill_topics`
-  ADD CONSTRAINT `quill_topics_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `quill_topics_ibfk_2` FOREIGN KEY (`thread_id`) REFERENCES `quill_threads` (`id`) ON DELETE CASCADE;
+  ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD FOREIGN KEY (`thread_id`) REFERENCES `quill_threads` (`id`) ON DELETE CASCADE;
 
 ALTER TABLE  `quill_replies` ADD FOREIGN KEY (`topic_id`) REFERENCES `quill_topics` (`id`) ON DELETE CASCADE ;
 ALTER TABLE  `quill_replies` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ;

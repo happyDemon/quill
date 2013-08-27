@@ -77,7 +77,7 @@ class Kohana_Model_Quill_Reply extends ORM {
 	 */
 	public function delete()
 	{
-		if($this->topic->thread->count_replies == 1)
+		if($this->topic->thread->location->count_replies == 1)
 		{
 			$this->topic->reply_count = DB::select(array(DB::expr('COUNT(*)'), 'replies'))
 				->from('quill_replies')

@@ -18,9 +18,9 @@ class Kohana_Quill {
 	 * @param string $status Which status should the threads have? open|closed (false to ignore)
 	 * @return array List of loaded Quill instances
 	 */
-	public static function threads($location, $status='open')
+	public static function threads($location, $status='open', $options = array())
 	{
-		$threads = ORM::factory('Quill_Thread')->where('location', '=', $location);
+		$threads = ORM::factory('Quill_Thread')->with('location')->where('location.name', '=', $location);
 
 		if($status != false)
 		{
@@ -38,6 +38,23 @@ class Kohana_Quill {
 				$list[] = self::factory($thread);
 			}
 		}
+		else if(Kohana::$config->load('quill.auto_create_location') == true)
+		{
+			// merge given options with defaults defined in the config
+			$options = array_merge(Kohana::$config->load('quill.default_options'), $options);
+
+			$loc = ORM::factory('Quill_Location', array('name' => $location));
+
+			//if there's no existing location we'll create it with the provided or default options
+			if(!$loc->loaded())
+			{
+				$options['name'] = $location;
+				$loc->reset()
+					->values($options)
+					->save();
+			}
+		}
+
 		return $list;
 	}
 
@@ -52,9 +69,6 @@ class Kohana_Quill {
 	{
 		$quill = get_called_class();
 
-		// merge given options with defaults defined in the config
-		$options = array_merge(Kohana::$config->load('quill.default_options'), $options);
-
 		// if an ID was specified
 		if(Valid::digit($thread_id))
 		{
@@ -65,13 +79,13 @@ class Kohana_Quill {
 		{
 			$thread = $thread_id;
 		}
-		// otherwise a string to load from a location
+		// otherwise a string of the name of the thread
 		else
 		{
-			$thread = ORM::factory('Quill_Thread')->where('location', '=', $thread_id)->find();
+			$thread = ORM::factory('Quill_Thread')->where('title', '=', $thread_id)->find();
 		}
 
-		return new $quill($thread, $options);
+		return new $quill($thread);
 	}
 
 	/**
@@ -79,27 +93,11 @@ class Kohana_Quill {
 	 */
 	protected $_thread = null;
 
-	public function __construct(Model_Quill_Thread $thread, $options)
+	public function __construct(Model_Quill_Thread $thread)
 	{
 		if(!$thread->loaded())
 		{
-			//if auto_create_thread is enabled we'll at least need a location defined to do so.
-			if(Kohana::$config->load('quill.auto_create_thread') == true && !empty($thread->location))
-			{
-				//set default option if not defined
-				foreach($options as $opt => $value)
-				{
-					if(empty($thread->{$opt}))
-					{
-						$thread->set($opt, $value);
-					}
-				}
-				$thread->save();
-			}
-			else
-			{
-				throw new Kohana_Exception('It seems like the thread you want to load does not exists');
-			}
+			throw new Kohana_Exception('It seems like the thread you want to load does not exists');
 		}
 
 		$this->_thread = $thread;
@@ -152,7 +150,7 @@ class Kohana_Quill {
 			$topics->where('status', '=', $status);
 		}
 
-		if($this->_thread->stickies == true)
+		if($this->_thread->location->stickies == true)
 		{
 			$topics->order_by('stickied', 'DESC');
 		}
@@ -210,7 +208,7 @@ class Kohana_Quill {
 			->save();
 
 		// if we're keeping track of active topic count, update it
-		if($this->_thread->count_topics == true)
+		if($this->_thread->location->count_topics == true)
 		{
 			$this->_thread->topic_count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
 				->from('quill_topics')
@@ -287,7 +285,7 @@ class Kohana_Quill {
 			->save($extra_validation, ($this->_thread->count_replies || $this->_thread->record_last_post));
 
 		// if we need to keep reply count, calculate before updating
-		if($this->_thread->count_replies == true)
+		if($this->_thread->location->count_replies == true)
 		{
 			$count = DB::select(array(DB::expr('COUNT(*)'), 'replies'))
 				->from('quill_replies')
@@ -300,7 +298,7 @@ class Kohana_Quill {
 		}
 
 		// if we need to record the last post's user
-		if($this->_thread->record_last_post)
+		if($this->_thread->location->record_last_post)
 		{
 			$topic->last_post_user_id = $values['user_id'];
 		}
