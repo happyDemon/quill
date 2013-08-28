@@ -5,9 +5,9 @@ return array(
 		'not_empty' => 'You need to be logged in to reply to a topic.'
 	),
 	'topic_id' => array(
-		'not_empty' => 'I don\'t know where you\'re posting this topic.'
+		'not_empty' => 'I don\'t know where you\'re posting this reply.'
 	),
 	'content' => array(
-		'not_empty' => 'Please provide some content for your topic.'
+		'not_empty' => 'Please provide some content for your reply.'
 	)
 );
