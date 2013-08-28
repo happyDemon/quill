@@ -184,7 +184,8 @@ class Kohana_Quill {
 
 		if(!isset($values['user_id']))
 		{
-			$values['user_id'] = Kohana::$config->load('quill.default_user_id');
+			$user = Kohana::$config->load('quill.default_user_id');
+			$values['user_id'] = $user();
 		}
 
 		$values['thread_id'] = $this->_thread->id;
@@ -274,7 +275,8 @@ class Kohana_Quill {
 
 		if(!isset($values['user_id']))
 		{
-			$values['user_id'] = Kohana::$config->load('quill.default_user_id');
+			$user = Kohana::$config->load('quill.default_user_id');
+			$values['user_id'] = $user();
 		}
 
 		$values['topic_id'] = $topic_id;

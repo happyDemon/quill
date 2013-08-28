@@ -40,7 +40,13 @@ class Kohana_Model_Quill_Reply extends ORM {
 			),
 			'status' => array(
 				array('in_array', array(':value', array('active', 'deleted'))),
-			)
+			),
+			'user_id' => array(
+				array('not_empty')
+			),
+			'topic_id' => array(
+				array('not_empty')
+			),
 		);
 	}
 

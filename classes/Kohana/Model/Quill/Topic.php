@@ -56,6 +56,12 @@ class Kohana_Model_Quill_Topic extends ORM {
 			),
 			'status' => array(
 				array('in_array', array(':value', array('active', 'archived', 'deleted'))),
+			),
+			'thread_id' => array(
+				array('not_empty')
+			),
+			'user_id' => array(
+				array('not_empty')
 			)
 		);
 	}
