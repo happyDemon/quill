@@ -1,0 +1,19 @@
+{
+	"name"       :"happydemon/quill",
+	"type"       :"kohana-module",
+	"description":"A portable discussion helper",
+	"keywords"   :["kohana", "discussion", "helper", "forum", "comments", "posts", "ORM", "portable"],
+	"homepage"   :"https://github.com/happyDemon/quill",
+	"license"    :"MIT",
+	"authors"    :[
+		{
+			"name"    :"Maxim Kerstens",
+			"email"   :"maxim.kerstens@gmail.com",
+			"role"    :"Developer"
+		}
+	],
+	"require"    :{
+		"php"                       :">5.3.2",
+		"composer/installers"       : "*"
+	}
+}
