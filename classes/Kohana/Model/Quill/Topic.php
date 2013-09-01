@@ -82,7 +82,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 			$replies->where('status', '=', $status);
 		}
 
-		$replies->order_by('created_at', 'DESC');
+		$replies->order_by('created_at', 'ASC');
 
 		return ($find == true) ? $replies->find_all() : $replies;
 	}
