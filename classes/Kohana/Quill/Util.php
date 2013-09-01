@@ -66,7 +66,7 @@ class Kohana_Quill_Util {
 	 * @param array $from
 	 * @param integer|Model_Quill_Thread $to
 	 */
-	public static function move_topics(Array $from, $to)
+	public static function move_topics(Array $topics, $to)
 	{
 
 	}
@@ -106,7 +106,7 @@ class Kohana_Quill_Util {
 			->on('quill_replies.topic_id', '=', 'quill_topics.id')
 			->where('quill_topics.thread_id', $operator, $thread_id)
 			->where('quill_replies.status', '=', 'deleted')
-			->execture();
+			->execute();
 
 		return $return;
 	}
