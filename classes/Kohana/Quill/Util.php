@@ -29,12 +29,12 @@ class Kohana_Quill_Util {
 			$to = ORM::factory('Quill_Thread', $to);
 		}
 
-		if( ! is_a($topic, 'Model_Quill_Topic') || ! $topic->loaded())
+		if( ! is_a($topic, 'Kohana_Model_Quill_Topic') || ! $topic->loaded())
 		{
 			throw new Kohana_Exception('Specify a topic to move');
 		}
 
-		if( ! is_a($topic, 'Model_Quill_Thread') || ! $to->loaded())
+		if( ! is_a($topic, 'Kohana_Model_Quill_Thread') || ! $to->loaded())
 		{
 			throw new Kohana_Exception('Specify a thread to move this topic to');
 		}
@@ -61,22 +61,50 @@ class Kohana_Quill_Util {
 	}
 
 	/**
-	 * Move all topics from a threads to another.
-	 *
-	 * @param array $from
-	 * @param integer|Model_Quill_Thread $to
-	 */
-	public static function move_topics(Array $topics, $to)
-	{
-
-	}
-
-	/**
 	 * Recount all topics and/or replies in a thread or location.
 	 */
 	public static function recount()
 	{
+		//recount the active topics for the active threads
+		$threads = ORM::factory('Quill_Thread')
+			->where('status', '=', 'open')
+			->find_all();
 
+		if(count($threads) > 0)
+		{
+			foreach($threads as $thread)
+			{
+				$count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
+					->from('quill_topics')
+					->where('thread_id', '=', $thread->id)
+					->where('status', '=', 'active')
+					->execute()
+					->get('topics');
+				$thread->topic_count = $count;
+				$thread->save();
+			}
+		}
+
+		//recount all active replies for all active topics
+		$topics = ORM::factory('Quill_Topic')
+			->where('status', '=', 'active')
+			->find_all();
+
+		if(count($topics) > 0)
+		{
+			foreach($topics as $topic)
+			{
+				$count = DB::select(array(DB::expr('COUNT(*)'), 'replies'))
+					->from('quill_replies')
+					->where('topic_id', '=', $topic->id)
+					->where('status', '=', 'active')
+					->execute()
+					->get('replies');
+
+				$topic->reply_count = $count;
+				$topic->save();
+			}
+		}
 	}
 
 	/**
@@ -87,7 +115,7 @@ class Kohana_Quill_Util {
 	 */
 	public static function clean($thread_id)
 	{
-		if(is_a($thread_id, 'Model_Quill_Thread'))
+		if(is_a($thread_id, 'Kohana_Model_Quill_Thread'))
 		{
 			$thread_id = $thread_id->id;
 		}
@@ -127,7 +155,7 @@ class Kohana_Quill_Util {
 		}
 
 		//if the model wasn't loaded
-		if(! $reply->loaded())
+		if( !is_a($reply, 'Kohana_Model_Quill_Reply') || ! $reply->loaded())
 		{
 			throw new Kohana_Exception('No reply to merge');
 		}

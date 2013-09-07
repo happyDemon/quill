@@ -88,6 +88,42 @@ class Kohana_Model_Quill_Topic extends ORM {
 	}
 
 	/**
+	 * Move this topic to a different thread.
+	 *
+	 * @param integer|Kohana_Model_Quill_Thread $location
+	 * @throws Kohana_Exception
+	 */
+	public function move($location)
+	{
+		if(Valid::digit($location))
+		{
+			$location = ORM::factory('Quill_Thread', $location);
+		}
+
+		if( ! is_a($location, 'Model_Quill_Thread') || ! $location->loaded())
+		{
+			throw new Kohana_Exception('Specify a thread to which you want to move topic ":id" to.', array(':id' => $this->id));
+		}
+
+		if($this->status == 'active')
+		{
+			$this->thread->topic_count -= 1;
+			$this->thread->save();
+		}
+
+		$this->thread_id = $location->id;
+		$this->save();
+
+		if($this->status == 'active')
+		{
+			$location->topic_count += 1;
+			$location->save();
+		}
+
+		return $this;
+	}
+
+	/**
 	 * When deleting a topic, check if topic topic_count should be recalculated.
 	 * @return ORM
 	 */
@@ -108,6 +144,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 		return parent::delete();
 	}
 
+	// Standardise the timestamp format when requested
 	public function get($col)
 	{
 		if(in_array($col, array($this->_created_column['column'], $this->_updated_column['column'])))

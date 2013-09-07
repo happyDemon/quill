@@ -75,7 +75,7 @@ class Kohana_Quill {
 			$thread = ORM::factory('Quill_Thread', $thread_id);
 		}
 		// if an instance was passed
-		else if(is_a($thread_id, 'Model_Quill_Thread'))
+		else if(is_a($thread_id, 'Kohana_Model_Quill_Thread'))
 		{
 			$thread = $thread_id;
 		}
@@ -247,7 +247,7 @@ class Kohana_Quill {
 		$topic = null;
 
 		// Retrieve the topic
-		if(is_a($topic_id, 'Model_Quill_Topic'))
+		if(is_a($topic_id, 'Kohana_Model_Quill_Topic'))
 		{
 			$topic = $topic_id;
 			$topic_id = $topic->id;
