@@ -7,10 +7,10 @@
  * @copyright  (c) 2013 Maxim Kerstens
  * @license    MIT
  */
-class Kohana_Model_Quill_Thread extends ORM {
+class Kohana_Model_Quill_Category extends ORM {
 
 	// Table specification
-	protected $_table_name = 'quill_threads';
+	protected $_table_name = 'quill_categories';
 
 	protected $_table_columns = array(
 		'id' => null,
@@ -23,7 +23,7 @@ class Kohana_Model_Quill_Thread extends ORM {
 
 	// Relationships
 	protected $_has_many = array(
-		'topics' => array('model' => 'Quill_Topic', 'foreign_key' => 'thread_id'),
+		'topics' => array('model' => 'Quill_Topic', 'foreign_key' => 'category_id'),
 	);
 
 	protected $_belongs_to = array(
@@ -65,7 +65,7 @@ class Kohana_Model_Quill_Thread extends ORM {
 		if($column == 'last_topic' && parent::get('location')->record_last_topic == 1)
 		{
 			return ORM::factory('Quill_Topic')
-				->where('thread_id', '=', $this->id)
+				->where('category_id', '=', $this->id)
 				->order_by('updated_at', 'DESC')
 				->limit(1)
 				->find();
@@ -74,4 +74,4 @@ class Kohana_Model_Quill_Thread extends ORM {
 		return parent::get($column);
 	}
 
-} // End Quill thread model
+} // End Quill category model

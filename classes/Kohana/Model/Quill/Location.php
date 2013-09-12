@@ -24,7 +24,7 @@ class Kohana_Model_Quill_Location extends ORM {
 
 	// Relationships
 	protected $_has_many = array(
-		'threads' => array('model' => 'Quill_Thread', 'foreign_key' => 'location_id'),
+		'categories' => array('model' => 'Quill_Category', 'foreign_key' => 'location_id'),
 	);
 
 	public function rules()

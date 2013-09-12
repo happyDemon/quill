@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') OR die('No direct access allowed.');
 /**
- * Thread model
+ * Location model
  *
  * @package    Quill/models
  * @author     Maxim Kerstens 'happyDemon'

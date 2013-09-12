@@ -14,7 +14,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 
 	protected $_table_columns = array(
 		'id' => null,
-		'thread_id' => null,
+		'category_id' => null,
 		'user_id' => null,
 		'title' => null,
 		'content' => null,
@@ -28,7 +28,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 
 	// Relationships
 	protected $_belongs_to = array(
-		'thread' => array('model' => 'Quill_Thread', 'foreign_key' => 'thread_id'),
+		'category' => array('model' => 'Quill_Category', 'foreign_key' => 'category_id'),
 		'user' => array('model' => 'User', 'foreign_key' => 'user_id'),
 		'last_user' => array('model' => 'User', 'foreign_key' => 'last_post_user_id')
 	);
@@ -57,7 +57,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 			'status' => array(
 				array('in_array', array(':value', array('active', 'archived', 'deleted'))),
 			),
-			'thread_id' => array(
+			'category_id' => array(
 				array('not_empty')
 			),
 			'user_id' => array(
@@ -88,30 +88,30 @@ class Kohana_Model_Quill_Topic extends ORM {
 	}
 
 	/**
-	 * Move this topic to a different thread.
+	 * Move this topic to a different category.
 	 *
-	 * @param integer|Kohana_Model_Quill_Thread $location
+	 * @param integer|Kohana_Model_Quill_Category $location
 	 * @throws Kohana_Exception
 	 */
 	public function move($location)
 	{
 		if(Valid::digit($location))
 		{
-			$location = ORM::factory('Quill_Thread', $location);
+			$location = ORM::factory('Quill_Category', $location);
 		}
 
-		if( ! is_a($location, 'Model_Quill_Thread') || ! $location->loaded())
+		if( ! is_a($location, 'Model_Quill_Category') || ! $location->loaded())
 		{
-			throw new Kohana_Exception('Specify a thread to which you want to move topic ":id" to.', array(':id' => $this->id));
+			throw new Kohana_Exception('Specify a category to which you want to move topic ":id" to.', array(':id' => $this->id));
 		}
 
 		if($this->status == 'active')
 		{
-			$this->thread->topic_count -= 1;
-			$this->thread->save();
+			$this->category->topic_count -= 1;
+			$this->category->save();
 		}
 
-		$this->thread_id = $location->id;
+		$this->category_id = $location->id;
 		$this->save();
 
 		if($this->status == 'active')
@@ -129,16 +129,16 @@ class Kohana_Model_Quill_Topic extends ORM {
 	 */
 	public function delete()
 	{
-		if($this->thread->location->count_topics == 1)
+		if($this->category->location->count_topics == 1)
 		{
-			$this->thread->topic_count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
+			$this->category->topic_count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
 				->from('quill_topics')
-				->where('thread_id', '=', $this->thread_id)
+				->where('category_id', '=', $this->category_id)
 				->where('status', '=', 'active')
 				->execute()
 				->get('topics') - 1;
 
-			$this->thread->save();
+			$this->category->save();
 		}
 
 		return parent::delete();

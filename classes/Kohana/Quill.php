@@ -12,30 +12,30 @@
 class Kohana_Quill {
 
 	/**
-	 * Load all threads for a location.
+	 * Load all categorys for a location.
 	 *
 	 * @param string $location Name of the location
-	 * @param string $status Which status should the threads have? open|closed (false to ignore)
+	 * @param string $status Which status should the categories have? open|closed (false to ignore)
 	 * @return array List of loaded Quill instances
 	 */
-	public static function threads($location, $status='open', $options = array())
+	public static function categorys($location, $status='open', $options = array())
 	{
-		$threads = ORM::factory('Quill_Thread')->where('location.name', '=', $location);
+		$categories = ORM::factory('Quill_Category')->where('location.name', '=', $location);
 
 		if($status != false)
 		{
-			$threads->where('status', '=', $status);
+			$categories->where('status', '=', $status);
 		}
 
-		$threads = $threads->find_all();
+		$categories = $categories->find_all();
 
 		$list = array();
 
-		if(count($threads) > 0)
+		if(count($categories) > 0)
 		{
-			foreach($threads as $thread)
+			foreach($categories as $category)
 			{
-				$list[] = self::factory($thread);
+				$list[] = self::factory($category);
 			}
 		}
 		else if(Kohana::$config->load('quill.auto_create_location') == true)
@@ -61,50 +61,50 @@ class Kohana_Quill {
 	/**
 	 * Prepare a Quill instance.
 	 *
-	 * @param integer|string|Model_Quill_Thread $thread_id Which thread are we loading
+	 * @param integer|string|Model_Quill_Category $category_id Which category are we loading
 	 * @param array $options see the config file for settable options
 	 * @return Kohana_Quill
 	 */
-	public static function factory($thread_id, $options = array())
+	public static function factory($category_id, $options = array())
 	{
 		$quill = get_called_class();
 
 		// if an ID was specified
-		if(Valid::digit($thread_id))
+		if(Valid::digit($category_id))
 		{
-			$thread = ORM::factory('Quill_Thread', $thread_id);
+			$category = ORM::factory('Quill_Category', $category_id);
 		}
 		// if an instance was passed
-		else if(is_a($thread_id, 'Kohana_Model_Quill_Thread'))
+		else if(is_a($category_id, 'Kohana_Model_Quill_Category'))
 		{
-			$thread = $thread_id;
+			$category = $category_id;
 		}
-		// otherwise a string of the name of the thread
+		// otherwise a string of the name of the category
 		else
 		{
-			$thread = ORM::factory('Quill_Thread')->where('title', '=', $thread_id)->find();
+			$category = ORM::factory('Quill_Category')->where('title', '=', $category_id)->find();
 		}
 
-		return new $quill($thread);
+		return new $quill($category);
 	}
 
 	/**
-	 * @var Model_Quill_Thread A Thread instance we can get info out of
+	 * @var Model_Quill_Category A Category instance we can get info out of
 	 */
-	protected $_thread = null;
+	protected $_category = null;
 
-	public function __construct(Model_Quill_Thread $thread)
+	public function __construct(Model_Quill_Category $category)
 	{
-		if(!$thread->loaded())
+		if(!$category->loaded())
 		{
-			throw new Kohana_Exception('It seems like the thread you want to load does not exists');
+			throw new Kohana_Exception('It seems like the category you want to load does not exists');
 		}
 
-		$this->_thread = $thread;
+		$this->_category = $category;
 	}
 
 	/**
-	 * Return a topic in this thread.
+	 * Return a topic in this category.
 	 *
 	 * @param integer|string $id Which id are we looking for
 	 * @param string $search_for Will we be checking the id or title column
@@ -123,7 +123,7 @@ class Kohana_Quill {
 			$search_for = 'quill_topic.'.$search_for;
 		}
 
-		$topic = $this->_thread->topics;
+		$topic = $this->_category->topics;
 
 		if($status != false)
 		{
@@ -136,21 +136,21 @@ class Kohana_Quill {
 	}
 
 	/**
-	 * Find topics for this thread.
+	 * Find topics for this category.
 	 *
 	 * @param bool $find Execute the query when returning or not (when not doing so you could paginate the results)
 	 * @param string $status Which status does the topic need to have active|archived|deleted (false for any status)
 	 * @return Model_Quill_Topic
 	 */
 	public function topics($find=true, $status='active') {
-		$topics = $this->_thread->topics;
+		$topics = $this->_category->topics;
 
 		if($status != false)
 		{
 			$topics->where('status', '=', $status);
 		}
 
-		if($this->_thread->location->stickies == true)
+		if($this->_category->location->stickies == true)
 		{
 			$topics->order_by('stickied', 'DESC');
 		}
@@ -161,7 +161,7 @@ class Kohana_Quill {
 	}
 
 	/**
-	 * Create a topic for this thread.
+	 * Create a topic for this category.
 	 *
 	 * Required $value keys:
 	 *  - user_id
@@ -176,10 +176,10 @@ class Kohana_Quill {
 	 */
 	public function create_topic(Array $values, $extra_validation=null)
 	{
-		// are we able to create a new topic in this thread
-		if($this->_thread->status == 'closed')
+		// are we able to create a new topic in this category
+		if($this->_category->status == 'closed')
 		{
-			throw new Kohana_Exception('You can not create a topic in a closed thread.');
+			throw new Kohana_Exception('You can not create a topic in a closed category.');
 		}
 
 		if(!isset($values['user_id']))
@@ -188,7 +188,7 @@ class Kohana_Quill {
 			$values['user_id'] = $user();
 		}
 
-		$values['thread_id'] = $this->_thread->id;
+		$values['category_id'] = $this->_category->id;
 
 		// this is required for ordering topics, so set it to creation time
 		$values['updated_at'] = date(Kohana::$config->load('quill.time_format'));
@@ -205,20 +205,20 @@ class Kohana_Quill {
 
 		// save the topic
 		$topic = ORM::factory('Quill_Topic')
-			->values($values, array('thread_id', 'user_id', 'title', 'content', 'status', 'stickied', 'updated_at', 'reply_count'))
+			->values($values, array('category_id', 'user_id', 'title', 'content', 'status', 'stickied', 'updated_at', 'reply_count'))
 			->save($extra_validation);
 
 		// if we're keeping track of active topic count, update it
-		if($this->_thread->location->count_topics == true)
+		if($this->_category->location->count_topics == true)
 		{
-			$this->_thread->topic_count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
+			$this->_category->topic_count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
 				->from('quill_topics')
-				->where('thread_id', '=', $this->_thread->id)
+				->where('category_id', '=', $this->_category->id)
 				->where('status', '=', 'active')
 				->execute()
 				->get('topics');
 
-			$this->_thread->save();
+			$this->_category->save();
 		}
 
 		return $topic;
@@ -284,10 +284,10 @@ class Kohana_Quill {
 		// save the reply
 		$reply = ORM::factory('Quill_Reply')
 			->values($values, array('topic_id', 'user_id', 'content'))
-			->save($extra_validation, ($this->_thread->location->count_replies || $this->_thread->location->record_last_post));
+			->save($extra_validation, ($this->_category->location->count_replies || $this->_category->location->record_last_post));
 
 		// if we need to keep reply count, calculate before updating
-		if($this->_thread->location->count_replies == true)
+		if($this->_category->location->count_replies == true)
 		{
 			$count = DB::select(array(DB::expr('COUNT(*)'), 'replies'))
 				->from('quill_replies')
@@ -300,7 +300,7 @@ class Kohana_Quill {
 		}
 
 		// if we need to record the last post's user
-		if($this->_thread->location->record_last_post)
+		if($this->_category->location->record_last_post)
 		{
 			$topic->last_post_user_id = $values['user_id'];
 		}
@@ -312,6 +312,6 @@ class Kohana_Quill {
 
 	public function __get($col)
 	{
-		return $this->_thread->get($col);
+		return $this->_category->get($col);
 	}
 }

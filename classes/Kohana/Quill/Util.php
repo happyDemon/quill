@@ -26,7 +26,7 @@ class Kohana_Quill_Util {
 
 		if(Valid::digit($to))
 		{
-			$to = ORM::factory('Quill_Thread', $to);
+			$to = ORM::factory('Quill_Category', $to);
 		}
 
 		if( ! is_a($topic, 'Kohana_Model_Quill_Topic') || ! $topic->loaded())
@@ -34,17 +34,17 @@ class Kohana_Quill_Util {
 			throw new Kohana_Exception('Specify a topic to move');
 		}
 
-		if( ! is_a($topic, 'Kohana_Model_Quill_Thread') || ! $to->loaded())
+		if( ! is_a($topic, 'Kohana_Model_Quill_Category') || ! $to->loaded())
 		{
-			throw new Kohana_Exception('Specify a thread to move this topic to');
+			throw new Kohana_Exception('Specify a category to move this topic to');
 		}
 
-		if($topic->thread->location->count_topics == true)
+		if($topic->category->location->count_topics == true)
 		{
-			$from = $topic->thread;
+			$from = $topic->category;
 		}
 
-		$topic->thread_id = $to->id;
+		$topic->category_id = $to->id;
 		$topic->save();
 
 		if($from != null)
@@ -66,7 +66,7 @@ class Kohana_Quill_Util {
 	public static function recount()
 	{
 		//recount the active topics for the active threads
-		$threads = ORM::factory('Quill_Thread')
+		$threads = ORM::factory('Quill_Category')
 			->where('status', '=', 'open')
 			->find_all();
 
@@ -76,7 +76,7 @@ class Kohana_Quill_Util {
 			{
 				$count = DB::select(array(DB::expr('COUNT(*)'), 'topics'))
 					->from('quill_topics')
-					->where('thread_id', '=', $thread->id)
+					->where('category_id', '=', $thread->id)
 					->where('status', '=', 'active')
 					->execute()
 					->get('topics');
@@ -115,7 +115,7 @@ class Kohana_Quill_Util {
 	 */
 	public static function clean($thread_id)
 	{
-		if(is_a($thread_id, 'Kohana_Model_Quill_Thread'))
+		if(is_a($thread_id, 'Kohana_Model_Quill_Category'))
 		{
 			$thread_id = $thread_id->id;
 		}
@@ -126,13 +126,13 @@ class Kohana_Quill_Util {
 
 		$return['topics'] = DB::delete('quill_topics')
 			->where('status', '=', 'deleted')
-			->where('thread_id', $operator, $thread_id)
+			->where('category_id', $operator, $thread_id)
 			->execute();
 
 		$return['replies'] = DB::delete('quill_replies')
 			->join('quill_topics')
 			->on('quill_replies.topic_id', '=', 'quill_topics.id')
-			->where('quill_topics.thread_id', $operator, $thread_id)
+			->where('quill_topics.category_id', $operator, $thread_id)
 			->where('quill_replies.status', '=', 'deleted')
 			->execute();
 
