@@ -18,7 +18,7 @@ class Kohana_Quill {
 	 * @param string $status Which status should the categories have? open|closed (false to ignore)
 	 * @return array List of loaded Quill instances
 	 */
-	public static function categorys($location, $status='open', $options = array())
+	public static function categories($location, $status='open', $options = array())
 	{
 		$categories = ORM::factory('Quill_Category')->where('location.name', '=', $location);
 
@@ -62,10 +62,9 @@ class Kohana_Quill {
 	 * Prepare a Quill instance.
 	 *
 	 * @param integer|string|Model_Quill_Category $category_id Which category are we loading
-	 * @param array $options see the config file for settable options
 	 * @return Kohana_Quill
 	 */
-	public static function factory($category_id, $options = array())
+	public static function factory($category_id)
 	{
 		$quill = get_called_class();
 
@@ -138,7 +137,7 @@ class Kohana_Quill {
 	/**
 	 * Find topics for this category.
 	 *
-	 * @param bool $find Execute the query when returning or not (when not doing so you could paginate the results)
+	 * @param bool $find Execute the query when returning or not (when not doing so you could paginate the results before executing it yourself)
 	 * @param string $status Which status does the topic need to have active|archived|deleted (false for any status)
 	 * @return Model_Quill_Topic
 	 */
