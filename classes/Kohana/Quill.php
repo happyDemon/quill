@@ -96,7 +96,7 @@ class Kohana_Quill {
 	{
 		if(!$category->loaded())
 		{
-			throw new Kohana_Exception('It seems like the category you want to load does not exists');
+			throw new Quill_Exception_Category_Load('It seems like the category you want to load does not exists');
 		}
 
 		$this->_category = $category;
@@ -115,7 +115,7 @@ class Kohana_Quill {
 	{
 		if(!in_array($search_for, array('id', 'title')))
 		{
-			throw new Kohana_Exception('You can only look for a topic based on id or title');
+			throw new Quill_Exception_Topic_Load('You can only look for a topic based on id or title');
 		}
 		else
 		{
@@ -190,7 +190,7 @@ class Kohana_Quill {
 		// are we able to create a new topic in this category
 		if($this->_category->status == 'closed')
 		{
-			throw new Kohana_Exception('You can not create a topic in a closed category.');
+			throw new Quill_Exception_Topic_Create('You can not create a topic in a closed category.');
 		}
 
 		if(!isset($values['user_id']))
@@ -202,7 +202,7 @@ class Kohana_Quill {
 		$values['category_id'] = $this->_category->id;
 
 		// this is required for ordering topics, so set it to creation time
-		$values['updated_at'] = date(Kohana::$config->load('quill.time_format'));
+		$values['updated_at'] = time();
 
 		// defaults
 		$values['reply_count'] = 0;
@@ -271,7 +271,7 @@ class Kohana_Quill {
 		}
 		else if(!Valid::digit($topic))
 		{
-			throw new Kohana_Exception('The provided topic id is not a number.');
+			throw new Quill_Exception_Topic_Load('The provided topic id is not a number.');
 		}
 		else
 		{
@@ -281,7 +281,7 @@ class Kohana_Quill {
 		// check if the topic actually exists before going further
 		if(!$topic->loaded())
 		{
-			throw new Kohana_Exception('There\'s no topic to reply to.');
+			throw new Quill_Exception_Topic_Load('There\'s no topic to reply to.');
 		}
 
 		return $topic->create_reply($values, $extra_validation);

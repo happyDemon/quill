@@ -86,6 +86,19 @@ class Kohana_Model_Quill_Reply extends ORM {
 			$this->topic->save();
 		}
 
+		//check if the last posted user is still correct
+		if($this->topic->category->location->record_last_post == 1)
+		{
+			$last_post = $this->topic->replies->where('quill_reply.id', '!=', $this->id)->order_by('created_at', 'DESC')->find();
+
+			if($last_post->user_id != $this->topic->last_post_user_id)
+			{
+				$this->topic->last_post_user_id = $last_post->user_id;
+				$this->topic->save(null, false);
+			}
+
+		}
+
 		return parent::delete();
 	}
 

@@ -88,7 +88,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 		// are we able to post a reply to the topic?
 		if($this->status != 'active')
 		{
-			throw new Kohana_Exception('You can\'t post a reply on a :status topic', array(':status' => $this->status));
+			throw new Quill_Exception_Reply_Status('You can\'t post a reply on a :status topic', array(':status' => $this->status));
 		}
 
 		if(!isset($values['user_id']))
@@ -153,6 +153,32 @@ class Kohana_Model_Quill_Topic extends ORM {
 	}
 
 	/**
+	 * @param        $id     Id of the reply you want to load
+	 * @param string $status The required status of the reply (false means any status)
+	 *
+	 * @return Model_Quill_Reply
+	 * @throws Quill_Exception_Topic_Load When no reply was found
+	 */
+	public function reply($id, $status='active')
+	{
+		$reply = $this->replies->where('quill_reply.id', '=', $id);
+
+		if($status != false)
+		{
+			$reply->where('quill_reply.status', '=', $status);
+		}
+
+		$return = $reply->find();
+
+		if(!$return->loaded())
+		{
+			Throw new Quill_Exception_Topic_Load('Reply #:id could not be found', array(':id' => $id));
+		}
+
+		return $return;
+	}
+
+	/**
 	 * Move this topic to a different category.
 	 *
 	 * @param integer|Kohana_Model_Quill_Category $location
@@ -167,7 +193,7 @@ class Kohana_Model_Quill_Topic extends ORM {
 
 		if( ! is_a($location, 'Model_Quill_Category') || ! $location->loaded())
 		{
-			throw new Kohana_Exception('Specify a category to which you want to move topic ":id" to.', array(':id' => $this->id));
+			throw new Quill_Exception_Topic_Move('Specify a category to which you want to move topic ":id" to.', array(':id' => $this->id));
 		}
 
 		if($this->status == 'active')
