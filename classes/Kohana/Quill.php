@@ -12,7 +12,7 @@
 class Kohana_Quill {
 
 	/**
-	 * Load all categorys for a location.
+	 * Load all categories for a location.
 	 *
 	 * @param string $location Name of the location
 	 * @param string $status Which status should the categories have? open|closed (false to ignore)
@@ -124,7 +124,11 @@ class Kohana_Quill {
 
 		$topic = $this->_category->topics;
 
-		if($status != false)
+		if($status == null)
+		{
+			$topic->where('status', '!=', 'deleted');
+		}
+		else if($status != false)
 		{
 			$topic->where('status', '=', $status);
 		}
@@ -138,23 +142,31 @@ class Kohana_Quill {
 	 * Find topics for this category.
 	 *
 	 * @param bool $find Execute the query when returning or not (when not doing so you could paginate the results before executing it yourself)
-	 * @param string $status Which status does the topic need to have active|archived|deleted (false for any status)
+	 * @param string $status Which status does the topic need to have active|archived|deleted (false for any status, null for none-deleted)
 	 * @return Model_Quill_Topic
 	 */
-	public function topics($find=true, $status='active') {
+	public function topics($find=true, $status='active', $order=true)
+	{
 		$topics = $this->_category->topics;
 
-		if($status != false)
+		if($status == null)
 		{
-			$topics->where('status', '=', $status);
+			$topics->where('quill_topic.status', '!=', 'deleted');
+		}
+		else if($status != false)
+		{
+			$topics->where('quill_topic.status', '=', $status);
 		}
 
 		if($this->_category->location->stickies == true)
 		{
-			$topics->order_by('stickied', 'DESC');
+			$topics->order_by('quill_topic.stickied', 'DESC');
 		}
 
-		$topics->order_by('updated_at', 'DESC');
+		if($order == true)
+		{
+			$topics->order_by('quill_topic.updated_at', 'DESC');
+		}
 
 		return ($find == true) ? $topics->find_all() : $topics;
 	}
@@ -220,6 +232,13 @@ class Kohana_Quill {
 			$this->_category->save();
 		}
 
+		// If Kohana-Plugin-System was installed fire a topic event
+		// by supplying the topic and the user
+		if(class_exists('Plug'))
+		{
+			Plug::fire('quill.topic', array($topic, $topic->user));
+		}
+
 		return $topic;
 	}
 
@@ -249,7 +268,6 @@ class Kohana_Quill {
 		if(is_a($topic_id, 'Kohana_Model_Quill_Topic'))
 		{
 			$topic = $topic_id;
-			$topic_id = $topic->id;
 		}
 		else if(!Valid::digit($topic))
 		{
@@ -266,47 +284,7 @@ class Kohana_Quill {
 			throw new Kohana_Exception('There\'s no topic to reply to.');
 		}
 
-		// are we able to post a reply to the topic?
-		if($topic->status != 'active')
-		{
-			throw new Kohana_Exception('You can\'t post a reply on a :status topic', array(':status' => $topic->status));
-		}
-
-		if(!isset($values['user_id']))
-		{
-			$user = Kohana::$config->load('quill.default_user_id');
-			$values['user_id'] = $user();
-		}
-
-		$values['topic_id'] = $topic_id;
-
-		// save the reply
-		$reply = ORM::factory('Quill_Reply')
-			->values($values, array('topic_id', 'user_id', 'content'))
-			->save($extra_validation, ($this->_category->location->count_replies || $this->_category->location->record_last_post));
-
-		// if we need to keep reply count, calculate before updating
-		if($this->_category->location->count_replies == true)
-		{
-			$count = DB::select(array(DB::expr('COUNT(*)'), 'replies'))
-				->from('quill_replies')
-				->where('topic_id', '=', $topic_id)
-				->where('status', '=', 'active')
-				->execute()
-				->get('replies');
-
-			$topic->reply_count = $count;
-		}
-
-		// if we need to record the last post's user
-		if($this->_category->location->record_last_post)
-		{
-			$topic->last_post_user_id = $values['user_id'];
-		}
-
-		$topic->save();
-
-		return $reply;
+		return $topic->create_reply($values, $extra_validation);
 	}
 
 	public function __get($col)

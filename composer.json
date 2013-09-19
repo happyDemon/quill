@@ -15,5 +15,8 @@
 	"require"    :{
 		"php"                       :">5.3.2",
 		"composer/installers"       : "*"
+	},
+	"suggest": {
+		"vheissu/kohana-plugin-system": " Quill fires a few events if kohana-plugin-system is present"
 	}
 }

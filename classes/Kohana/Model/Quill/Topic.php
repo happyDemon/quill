@@ -67,22 +67,87 @@ class Kohana_Model_Quill_Topic extends ORM {
 	}
 
 	/**
+	 * Create a reply for this topic.
+	 *
+	 * The only required key in $values is 'content',
+	 * the logged in user's id can still be retrieved
+	 * through the config defined helper function(default_user_id)
+	 *
+	 * Updates reply count for the topic, if enabled.
+	 * Adds last_post_user_id if enabled.
+	 *
+	 * if none of the above is enabled it 'touches' the topic to update the column 'updated_at' for ordering.
+	 *
+	 * @param array $values
+	 * @param null|Kohana_Validation $extra_validation
+	 * @return Model_Quill_Reply
+	 * @throws Kohana_Exception
+	 */
+	public function create_reply($values, $extra_validation=null)
+	{
+		// are we able to post a reply to the topic?
+		if($this->status != 'active')
+		{
+			throw new Kohana_Exception('You can\'t post a reply on a :status topic', array(':status' => $this->status));
+		}
+
+		if(!isset($values['user_id']))
+		{
+			$user = Kohana::$config->load('quill.default_user_id');
+			$values['user_id'] = $user();
+		}
+
+		$values['topic_id'] = $this->id;
+
+		// save the reply
+		$reply = ORM::factory('Quill_Reply')
+			->values($values, array('topic_id', 'user_id', 'content'))
+			->save($extra_validation, ($this->category->location->count_replies || $this->category->location->record_last_post));
+
+		// if we need to keep reply count, calculate before updating
+		if($this->category->location->count_replies == true)
+		{
+			$this->reply_count += 1;
+		}
+
+		// if we need to record the last post's user
+		if($this->category->location->record_last_post)
+		{
+			$this->last_post_user_id = $values['user_id'];
+		}
+
+		// If Kohana-Plugin-System is installed let's fire a reply event
+		// and supply the reply and the user that made the reply
+		if(class_exists('Plug'))
+		{
+			Plug::fire('quill.reply', array($reply, $reply->user));
+		}
+
+		$this->save();
+
+		return $reply;
+	}
+
+	/**
 	 * Load all replies related to this topic.
 	 *
 	 * @param bool $find Execute the query when returning or not (when not doing so you could paginate the results)
 	 * @param string $status Which status do the replies need to have active|deleted (false for any status)
 	 * @return mixed
 	 */
-	public function replies($find=true, $status='active')
+	public function replies($find=true, $status='active', $order=true)
 	{
 		$replies = $this->replies;
 
 		if($status != false)
 		{
-			$replies->where('status', '=', $status);
+			$replies->where('quill_reply.status', '=', $status);
 		}
 
-		$replies->order_by('created_at', 'ASC');
+		if($order)
+		{
+			$replies->order_by('quill_reply.created_at', 'ASC');
+		}
 
 		return ($find == true) ? $replies->find_all() : $replies;
 	}
