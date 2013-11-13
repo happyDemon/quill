@@ -15,11 +15,13 @@ class Kohana_Model_Quill_Location extends ORM {
 	protected $_table_columns = array(
 		'id' => null,
 		'name' => null,
+		'description' => null,
 		'count_topics' => null,
 		'record_last_topic' => null,
 		'stickies' => null,
 		'count_replies' => null,
-		'record_last_post' => null
+		'record_last_post' => null,
+		'count_views' => null
 	);
 
 	// Relationships
